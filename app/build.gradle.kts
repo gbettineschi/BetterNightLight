@@ -167,6 +167,7 @@ androidComponents {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
