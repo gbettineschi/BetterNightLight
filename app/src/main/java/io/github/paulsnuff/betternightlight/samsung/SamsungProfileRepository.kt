@@ -9,16 +9,48 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SamsungProfileRepository @Inject constructor(private val dataStore: DataStore<Preferences>) : SamsungProfileStore {
-    override val profiles = dataStore.data.map { decode(it) }
+class SamsungProfileRepository @Inject constructor(
+    private val dataStore: DataStore<Preferences>,
+    @SamsungRuntime private val runtime: DataStore<Preferences>,
+) : SamsungProfileStore {
+    private val mutex = Mutex()
+    override val profiles = flow {
+        mutex.withLock { initialize() }
+        emitAll(runtime.data.map { decode(it) })
+    }
 
-    override suspend fun update(transform: (SamsungProfile) -> SamsungProfile): SamsungProfile {
-        val written = dataStore.edit { preferences -> encode(preferences, transform(decode(preferences))) }
-        return decode(written)
+    override suspend fun update(transform: (SamsungProfile) -> SamsungProfile): SamsungProfile = mutex.withLock {
+        initialize()
+        val written = runtime.edit { preferences -> encode(preferences, transform(decode(preferences))) }
+        val profile = decode(written)
+        // Only portable targets are backed up. Native ownership belongs to this device/session.
+        dataStore.edit { encode(it, profile); removeOwnership(it) }
+        profile
+    }
+
+    private suspend fun initialize() {
+        if (runtime.data.first()[INITIALIZED] == true) return
+        val portable = decode(dataStore.data.first()).copy(
+            enabled = false, paused = false, originalSettings = null, lastAppliedLevel = null,
+        )
+        runtime.edit {
+            if (it[INITIALIZED] != true) { encode(it, portable); it[INITIALIZED] = true }
+        }
+        // Legacy pre-release backups may contain old snapshots. Never restore those to a new phone.
+        dataStore.edit { removeOwnership(it) }
+    }
+
+    private fun removeOwnership(p: MutablePreferences) {
+        p.remove(ENABLED); p.remove(PAUSED); p.remove(ORIGINAL); p.remove(LAST_LEVEL)
     }
 
     private fun decode(p: Preferences): SamsungProfile {
@@ -56,6 +88,7 @@ class SamsungProfileRepository @Inject constructor(private val dataStore: DataSt
     }
 
     private companion object {
+        val INITIALIZED = booleanPreferencesKey("samsung_local_initialized")
         val ENABLED = booleanPreferencesKey("samsung_enabled")
         val PAUSED = booleanPreferencesKey("samsung_paused")
         val SOLAR = booleanPreferencesKey("samsung_solar")

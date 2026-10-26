@@ -21,7 +21,7 @@ A personal Samsung-compatible fork of [Better Night Light by paulsnuff](https://
 
 When Shizuku is unavailable, automatic updates and this app’s tile cannot control the native filter. The phone’s own Eye comfort shield tile remains available to turn it off. Reopen this app and reconnect Shizuku to finish any pending restore.
 
-Sunrise/sunset uses saved coordinates; fetching a location is an explicit foreground action. If solar times cannot be calculated, manual times are used. Keep the three manual times distinct. System time-zone changes are followed automatically.
+Sunrise/sunset uses saved coordinates; fetching a location is an explicit foreground action. If solar times cannot be calculated, manual times are used. Keep the three manual times distinct. System time-zone changes are followed automatically. If two targets resolve to the same instant (for example during the spring clock change), Night takes priority over Sunset, then Day.
 
 ## Compatibility and validation
 
@@ -30,6 +30,8 @@ The Samsung backend was tested on a physical **Galaxy S23 (SM-S911B), Android 17
 See [device validation](docs/samsung-validation.md) for exact checks and remaining limits. Short tests do not establish overnight reliability, and full phone reboot / global Shizuku-server restart are not part of the physical test record.
 
 Other Samsung / One UI versions may use a different private service. Detection checks for the tested service and settings; it is not a compatibility guarantee. The existing AOSP Night Light screen remains available on non-Samsung devices, but its hardware path was not retested as part of this fork.
+
+Schedule preferences are portable, but enabled/pause state and native restoration snapshots stay in Android’s no-backup directory. Reinstallation or device transfer starts automation off and captures the new device’s settings only when enabled. Any legacy pre-release snapshot in backed-up preferences is discarded, while target preferences are retained.
 
 ## Build
 

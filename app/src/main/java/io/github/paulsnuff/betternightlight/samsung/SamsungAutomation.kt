@@ -40,7 +40,7 @@ class SamsungAutomation(
                     }
                     return@repeat
                 }
-                profile.validationError()?.let {
+                (if (profile.paused) null else profile.validationError())?.let {
                     _status.value = SamsungAutomationStatus(it, error = true)
                     return@withLock
                 }
@@ -69,6 +69,10 @@ class SamsungAutomation(
                     return@withLock
                 }
                 if (store.profiles.first() != profile) return@repeat
+                // Persist our write intent before touching native state. A failed automatic-off
+                // must not be mistaken for a user switching the filter off after a restart.
+                val intent = profile.copy(lastAppliedLevel = null)
+                if (store.update { if (it == profile) intent else it } != intent) return@repeat
                 control.applyLevel(level)
                 store.update { it.copy(lastAppliedLevel = level) }
             }

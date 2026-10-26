@@ -20,5 +20,7 @@ fun resolveSamsungLevel(
             TimedTarget(manual(profile.night).toInstant(), profile.night.level, profile.night.fadeMinutes),
         )
     }
-    return interpolateLevel(now.toInstant(), targets)
+    // A spring-forward gap (or a solar/manual coincidence) can map two targets to
+    // one instant. The later phase wins: Night, then Sunset, then Day.
+    return interpolateLevel(now.toInstant(), targets.associateBy { it.at }.values.toList())
 }

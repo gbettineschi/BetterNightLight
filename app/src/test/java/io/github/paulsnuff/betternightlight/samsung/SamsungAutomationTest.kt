@@ -114,4 +114,31 @@ class SamsungAutomationTest {
         assertEquals(0, control.values[4])
         assertTrue(control.history.none { it[0] == 8 && it[4] == 1 })
     }
+    @Test fun invalidScheduleCannotPreventExplicitPause() = runBlocking {
+        val original = listOf(10, 0, 1, 0, 0)
+        val store = Store(SamsungProfile(enabled = true, paused = true, useSunTimes = true, originalSettings = original, lastAppliedLevel = 6))
+        val control = Control(listOf(6, 0, 1, 0, 1))
+        SamsungAutomation(store, control) { error("Invalid schedule must not be evaluated") }.reconcile()
+        assertEquals(0, control.values[4])
+        assertTrue(store.profiles.value.paused)
+        assertEquals(original, store.profiles.value.originalSettings)
+    }
+    @Test fun failedAutomaticOffCanRecoverAndRunTheNextEvening() = runBlocking {
+        val original = listOf(10, 0, 1, 0, 0)
+        val store = Store(SamsungProfile(enabled = true, originalSettings = original, lastAppliedLevel = 6))
+        val control = Control(listOf(6, 0, 1, 0, 1)).apply { failApply = true }
+        var target = 0
+        val automation = SamsungAutomation(store, control) { target }
+        automation.reconcile()
+        assertTrue(automation.status.value.error)
+        assertEquals(0, control.values[4]) // Native write succeeded; refresh failed.
+        control.failApply = false
+        val restarted = SamsungAutomation(store, control) { target }
+        restarted.reconcile()
+        assertFalse(store.profiles.value.paused)
+        target = 8
+        restarted.reconcile()
+        assertFalse(store.profiles.value.paused)
+        assertEquals(listOf(8, 0, 1, 0, 1), control.values)
+    }
 }

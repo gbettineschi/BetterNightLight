@@ -49,13 +49,12 @@ class SamsungTileService : TileService() {
                 bridge.refresh()
                 if (bridge.state.value == SamsungConnection.CONNECTING) runCatching { bridge.requireWorker() }
                 val profile = profiles.profiles.first()
-                if (!SamsungDevice.isSupported(this@SamsungTileService) || bridge.state.value != SamsungConnection.READY || profile.validationError() != null) {
+                if (!SamsungDevice.isSupported(this@SamsungTileService) || bridge.state.value != SamsungConnection.READY || samsungTileAction(profile) == null) {
                     withContext(Dispatchers.Main) { openApp() }
                     return@launch
                 }
                 profiles.update {
-                    if (!it.enabled) it.copy(enabled = true, paused = false, lastAppliedLevel = null)
-                    else it.copy(paused = !it.paused, lastAppliedLevel = null)
+                    samsungTileAction(it) ?: it
                 }
                 SamsungAutomationService.start(this@SamsungTileService)
                 automation.reconcile()
