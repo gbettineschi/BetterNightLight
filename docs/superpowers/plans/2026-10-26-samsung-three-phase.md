@@ -77,4 +77,4 @@
 - [ ] Install under a distinct application ID; test actual three-stage settings, short fade, background operation, manual-off, tile pause/resume and exact restore. Keep reboot validation distinct if a real reboot is not performed.
 - [x] Obtain a fresh whole-branch review using the executing-plans review procedure, fix material findings with regression tests, and rerun required checks.
 - [x] Update README with setup, Shizuku restart requirement, eleven-level limitation, restoration behavior and verified/unverified scope.
-- [ ] Commit and push the feature branch to the explicitly requested fork, copy a signed APK into outputs, and provide the fork/branch and APK links.
+- [x] Commit and push the feature branch to the explicitly requested fork, copy a signed APK into outputs, and provide the fork/branch and APK links.
