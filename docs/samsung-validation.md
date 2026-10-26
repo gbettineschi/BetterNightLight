@@ -53,3 +53,7 @@ The reviewer reported no critical issues or deferred minors. No second review wa
 - Physical tile / fade / dialog-focus / optimized-APK checks remain pending at the owner’s request to finish the build after disconnection. The cost is unverified final hardware behavior, not a claim of completed acceptance.
 - Full reboot, global Shizuku restart, overnight battery management and other Samsung versions remain untested; no disruptive phone actions were taken to extend this evidence.
 - The upstream AOSP internals remain as provided. Compilation is checked; AOSP hardware acceptance is outside this Samsung task.
+
+## Final build result
+
+`testDebugUnitTest assembleDebug lintDebug assembleRelease lintRelease` succeeded after the review fixes (45 tests, zero failures/errors/skips). The optimized release APK is signed with the same certificate as the installed development APK, contains the Samsung tile, excludes the debug-only probe, and is not debuggable. It has not yet been installed on the disconnected phone. Existing upstream warnings about dependency versions, translations, an unused expression and native-library stripping remain; lint reports no errors.
