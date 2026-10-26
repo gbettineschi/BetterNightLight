@@ -6,6 +6,9 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.paulsnuff.betternightlight.data.UserPreferencesRepository
+import io.github.paulsnuff.betternightlight.samsung.SamsungProfileRepository
+import io.github.paulsnuff.betternightlight.samsung.SamsungDevice
+import io.github.paulsnuff.betternightlight.samsung.SamsungAutomationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -26,6 +29,8 @@ class BootCompletedReceiver : BroadcastReceiver() {
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
+    @Inject lateinit var samsungProfiles: SamsungProfileRepository
+
     override fun onReceive(
         context: Context,
         intent: Intent,
@@ -34,6 +39,11 @@ class BootCompletedReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                if (SamsungDevice.isSupported(context)) {
+                    val profile = samsungProfiles.profiles.first()
+                    if (profile.enabled || profile.originalSettings != null) SamsungAutomationService.start(context)
+                    return@launch
+                }
                 val enabled = userPreferencesRepository.automationScheduleFlow.first().enabled
                 if (enabled) {
                     ContextCompat.startForegroundService(

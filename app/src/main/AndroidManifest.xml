@@ -54,6 +54,14 @@
                 android:value="Periodically adjusts the Night Light color temperature according to the user's schedule." />
         </service>
 
+        <service
+            android:name=".samsung.SamsungAutomationService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Applies the user's gradual Samsung screen-warmth schedule and restores prior settings when stopped." />
+        </service>
+
         <receiver
             android:name=".service.BootCompletedReceiver"
             android:enabled="true"

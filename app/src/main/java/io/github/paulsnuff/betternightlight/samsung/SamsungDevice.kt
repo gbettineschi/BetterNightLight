@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class SamsungNativeState(val active: Boolean, val level: Int, val customMode: Boolean)
-
 @Singleton
 class SamsungDevice @Inject constructor(@ApplicationContext private val context: Context) {
     fun read(): SamsungNativeState {
