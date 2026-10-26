@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.paulsnuff.betternightlight"
+        applicationId = "io.github.gbettineschi.betternightlight"
         minSdk = 29
         targetSdk = 37
         versionCode = appVersionCode
