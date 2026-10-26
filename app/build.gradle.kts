@@ -21,12 +21,7 @@ val commitsSinceTag: Int =
         .substringBefore("-")
         .toIntOrNull() ?: 0
 
-val appVersionName: String =
-    when {
-        latestTag.isEmpty() -> "1.0.0"
-        commitsSinceTag > 0 -> "$latestTag-dev"
-        else -> latestTag
-    }
+val appVersionName: String = "${latestTag.ifEmpty { "1.0.0" }}-samsung.1"
 
 val appVersionCode: Int =
     appVersionName.substringBefore("-").split(".").let { parts ->
@@ -167,7 +162,7 @@ androidComponents {
 }
 
 dependencies {
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)

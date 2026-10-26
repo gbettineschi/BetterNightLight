@@ -248,8 +248,8 @@ fun SettingsScreen(
             onClick = ::openBatteryOptimizationSettings,
         )
 
-        // 5. Background location permission tile
-        SettingsTile(
+        // Samsung profiles use an explicitly saved location and need only foreground access.
+        if (!io.github.paulsnuff.betternightlight.samsung.SamsungDevice.isSupported(context)) SettingsTile(
             icon = Icons.Rounded.LocationOn,
             title = stringResource(R.string.settings_background_location_title),
             subtitle = stringResource(R.string.settings_background_location_subtitle),

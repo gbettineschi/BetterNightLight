@@ -1,60 +1,44 @@
-<div align="center">
+# Better Night Light Samsung
 
-# Better Night Light
+A personal Samsung-compatible fork of [Better Night Light by paulsnuff](https://github.com/paulsnuff/BetterNightLight), licensed under [GPL v3 or later](LICENSE). It controls Samsung’s native **Eye comfort shield** through Shizuku, without root or a screen overlay.
 
-<img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" width="192" alt="Better Night Light icon"/>
+## Samsung features
 
-</div>
+- **Day, Sunset and Night** warmth targets, each with its own fade duration (0–240 minutes).
+- Manual target times, or sunrise and sunset from a saved location; Night has a chosen clock time.
+- Eleven native Custom-mode warmth levels, 0–10. These are not calibrated Kelvin values. A long fade advances through these discrete levels rather than using an overlay to interpolate finer colors.
+- A dedicated **Night Light Quick Settings tile**: first tap enables the schedule; subsequent taps pause/resume. Long press opens the app. The app’s master switch stops automation and restores the previous Samsung configuration.
+- Persistent pause, including when you switch Eye comfort shield off yourself.
+- Original native settings saved before takeover; failed restoration remains pending for retry.
+- A foreground service, wake/time-change reconciliation, and a periodic recovery worker. Errors and lost helper access are visible.
 
-## Installation
+## Setup
 
-<div align="center">
+1. Install this fork’s APK (`io.github.gbettineschi.betternightlight`, displayed as **Better Night Light Samsung**).
+2. Install [Shizuku](https://github.com/RikkaApps/Shizuku), start it using wireless debugging or USB ADB, then allow this app to access it. **Keep Shizuku running. Restart it after every phone reboot.** A one-time `WRITE_SECURE_SETTINGS` grant alone cannot write Samsung’s private filter settings on the tested phone.
+3. Open the app, choose the three targets and fade durations, then enable Automatic warmth. While enabled, this app takes over Samsung’s Custom schedule; turning it off restores the saved configuration.
+4. Tap **Add Quick Settings tile**, or add **Night Light** from Quick Settings → Edit. Allow notifications and unrestricted background operation if Android asks.
 
-[<img src="docs/images/badge_obtainium.png" width="323" alt="Get it on Obtainium"/>](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.paulsnuff.betternightlight%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fpaulsnuff%2FBetterNightLight%22%2C%22author%22%3A%22paulsnuff%22%2C%22name%22%3A%22Better%20Night%20Light%22%7D)[<img src="docs/images/get-it-on-github.png" width="323" alt="Get it on GitHub"/>](https://github.com/paulsnuff/BetterNightLight/releases/download/v1.0.3/BetterNightLight-1.0.3.apk)
+When Shizuku is unavailable, automatic updates and this app’s tile cannot control the native filter. The phone’s own Eye comfort shield tile remains available to turn it off. Reopen this app and reconnect Shizuku to finish any pending restore.
 
-</div>
+Sunrise/sunset uses saved coordinates; fetching a location is an explicit foreground action. If solar times cannot be calculated, manual times are used. Keep the three manual times distinct. System time-zone changes are followed automatically.
 
-## Requirements
+## Compatibility and validation
 
-- **Android 10 (API 29) or higher**
-- One of the following options to grant the app the permissions required to control Night Light:
-  - **ADB**
-  - **Shizuku** (or compatible alternatives)
-  - **Root** access
+The Samsung backend was tested on a physical **Galaxy S23 (SM-S911B), Android 17 / One UI 9**. The helper ran with ADB shell UID 2000, without root. A standard Android emulator does not contain Samsung’s native service, so it cannot validate this backend.
 
-> [!WARNING]
-> This app has only been tested on emulators and a Pixel 10 Pro. Use it at your own risk.
+See [device validation](docs/samsung-validation.md) for exact checks and remaining limits. Short tests do not establish overnight reliability, and full phone reboot / global Shizuku-server restart are not part of the physical test record.
 
-## Screenshots
+Other Samsung / One UI versions may use a different private service. Detection checks for the tested service and settings; it is not a compatibility guarantee. The existing AOSP Night Light screen remains available on non-Samsung devices, but its hardware path was not retested as part of this fork.
 
-<p align="center">
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" alt="Screenshot 1"/><!--
---><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="24%" alt="Screenshot 2"/><!--
---><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="24%" alt="Screenshot 3"/><!--
---><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="24%" alt="Screenshot 4"/>
-</p>
+## Build
 
-## Features
+Use JDK 25 and Android SDK 37 (build-tools 36.0.0):
 
-- **Flexible scheduling** - manual start/end times or automatic sunrise & sunset based on your location (auto-detected or entered manually).
-- **Night phases** - go beyond a simple on/off schedule:
-  - **Base** phase covering the main part of the night,
-  - **Boost** phase with a stronger filter later at night,
-  - **Force off** phase after which the filter stays off.
-- **Adjustable strength** - set the color temperature anywhere from 1000 K to 6500 K, for each phase separately.
-- **Smooth transitions** - apply changes instantly or ramp gradually across the night.
-- **Reliable automation** - a foreground service keeps the schedule up to date, backed by periodic work as a safety net. Everything restarts automatically after a reboot.
+```sh
+./gradlew testDebugUnitTest assembleDebug lintDebug
+```
 
-## Why?
+For a signed, optimized release build, supply `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` through the environment, then run `./gradlew assembleRelease`. Keep the same private signing key for future updates; do not commit it. The debug-only physical test activity is excluded from release builds.
 
-Not all ROMs expose advanced Night Light scheduling, and the built-in options are often limited to a simple sunset-to-sunrise toggle. Better Night Light fills that gap by controlling the system's native Night Light directly.
-
-Why use the native Night Light instead of overlay apps?
-
-- **True color transformation.** Native Night Light adjusts each pixel's R, G, and B values directly in the GPU rendering pipeline, *before* the image is displayed. Overlay apps simply draw a semi-transparent layer on top of the already-rendered image, which washes out contrast and mutes saturation.
-- **Zero performance cost.** The system-level approach adds no extra GPU or battery load, whereas an overlay layer must be rendered every single frame.
-- **Complete coverage.** Night Light applies its transform at the final display pipeline stage, so it uniformly covers every visible pixel - including privileged system UI like the notification shade and lock screen, above which overlay apps cannot render.
-
-## License
-
-Licensed under the [GNU GPL v3](LICENSE) or any later version.
+There is no automated release/update feed for this personal Samsung branch yet. The upstream project’s APKs do not contain this Samsung backend.

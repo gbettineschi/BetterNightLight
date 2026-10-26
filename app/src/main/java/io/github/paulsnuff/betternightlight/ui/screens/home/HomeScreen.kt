@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import io.github.paulsnuff.betternightlight.samsung.SamsungDevice
+import io.github.paulsnuff.betternightlight.samsung.SamsungHomeRoute
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,7 +40,14 @@ import io.github.paulsnuff.betternightlight.ui.components.rememberInAppMessageSt
 import io.github.paulsnuff.betternightlight.ui.theme.BetterNightLightTheme
 
 @Composable
-fun HomeRoute(
+fun HomeRoute(modifier: Modifier = Modifier, contentBottomPadding: Dp = 0.dp) {
+    val context = LocalContext.current
+    if (remember { SamsungDevice.isSupported(context) }) SamsungHomeRoute(modifier, contentBottomPadding)
+    else AospHomeRoute(modifier, contentBottomPadding)
+}
+
+@Composable
+private fun AospHomeRoute(
     modifier: Modifier = Modifier,
     contentBottomPadding: Dp = 0.dp,
     viewModel: HomeViewModel = hiltViewModel(),

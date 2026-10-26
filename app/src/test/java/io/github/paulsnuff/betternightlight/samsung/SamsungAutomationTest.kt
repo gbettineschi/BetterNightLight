@@ -17,6 +17,7 @@ class SamsungAutomationTest {
         var failRestore = false
         var onSnapshot: (suspend () -> Unit)? = null
         var onApply: (suspend () -> Unit)? = null
+        var onRestore: (suspend () -> Unit)? = null
         override suspend fun readState() = SamsungNativeState(values[4] == 1, values[0], values[1] == 0 && values[2] == 1 && values[3] == 0)
         override suspend fun snapshot(): List<Int> { val saved = values.toList(); onSnapshot?.invoke(); return saved }
         override suspend fun applyLevel(level: Int) {
@@ -28,6 +29,7 @@ class SamsungAutomationTest {
         override suspend fun restore(original: List<Int>) {
             if (failRestore) throw IllegalStateException("Helper unavailable")
             values = SamsungSettings.restoreWrites(original).map { it.second }; history += values
+            onRestore?.invoke()
         }
     }
     @Test fun capturesTheOriginalSettingsBeforeTakingControl() = runBlocking {
@@ -100,5 +102,16 @@ class SamsungAutomationTest {
         automation.reconcile()
         assertTrue(automation.status.value.error); assertEquals(listOf(9), store.profiles.value.originalSettings)
         assertTrue(control.history.isEmpty())
+    }
+    @Test fun reenableAndPauseDuringRestoreRetainsTheLatestPause() = runBlocking {
+        val original = listOf(10, 0, 1, 0, 0)
+        val store = Store(SamsungProfile(originalSettings = original))
+        val control = Control(listOf(6, 0, 1, 0, 1))
+        control.onRestore = { store.update { it.copy(enabled = true, paused = true) } }
+        SamsungAutomation(store, control) { 8 }.reconcile()
+        assertTrue(store.profiles.value.enabled)
+        assertTrue(store.profiles.value.paused)
+        assertEquals(0, control.values[4])
+        assertTrue(control.history.none { it[0] == 8 && it[4] == 1 })
     }
 }

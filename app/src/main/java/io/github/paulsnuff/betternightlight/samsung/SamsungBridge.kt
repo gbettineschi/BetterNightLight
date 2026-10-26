@@ -20,7 +20,7 @@ import rikka.shizuku.Shizuku
 import javax.inject.Inject
 import javax.inject.Singleton
 
-enum class SamsungConnection { STOPPED, NEEDS_PERMISSION, CONNECTING, READY }
+enum class SamsungConnection { STOPPED, NEEDS_PERMISSION, CONNECTING, READY, FAILED }
 
 @Singleton
 class SamsungBridge @Inject constructor(
@@ -62,7 +62,7 @@ class SamsungBridge @Inject constructor(
         refresh()
         when (_state.value) {
             SamsungConnection.NEEDS_PERMISSION -> Shizuku.requestPermission(REQUEST_CODE)
-            SamsungConnection.CONNECTING, SamsungConnection.READY -> scope.launch { runCatching { requireWorker() } }
+            SamsungConnection.CONNECTING, SamsungConnection.READY, SamsungConnection.FAILED -> scope.launch { runCatching { requireWorker() } }
             SamsungConnection.STOPPED -> Unit
         }
     }
@@ -108,6 +108,7 @@ class SamsungBridge @Inject constructor(
                 runCatching { Shizuku.unbindUserService(args, connection, false) }
                 worker = null
                 refresh()
+                if (_state.value == SamsungConnection.CONNECTING) _state.value = SamsungConnection.FAILED
                 throw error
             }
         }

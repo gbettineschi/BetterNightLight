@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.paulsnuff.betternightlight.shizuku.ShizukuPermissionManager
+import io.github.paulsnuff.betternightlight.samsung.SamsungDevice
 import io.github.paulsnuff.betternightlight.ui.AppRoot
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,9 +22,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                shizukuPermissionManager.tryGrantSilentlyInBackground()
+        // Samsung uses the typed runtime helper; the AOSP permission grant is unnecessary there.
+        if (!SamsungDevice.isSupported(this)) {
+            lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                    shizukuPermissionManager.tryGrantSilentlyInBackground()
+                }
             }
         }
 

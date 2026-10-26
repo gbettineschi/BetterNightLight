@@ -32,7 +32,11 @@ class SamsungAutomation(
                     }
                     control.restore(original)
                     store.update {
-                        if (it.originalSettings == original) it.copy(originalSettings = null, lastAppliedLevel = null, paused = false) else it
+                        if (it.originalSettings == original) it.copy(
+                            originalSettings = null,
+                            lastAppliedLevel = null,
+                            paused = it.enabled && it.paused,
+                        ) else it
                     }
                     return@repeat
                 }

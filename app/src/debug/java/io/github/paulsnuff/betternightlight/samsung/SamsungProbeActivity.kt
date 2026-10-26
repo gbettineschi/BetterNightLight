@@ -8,6 +8,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import rikka.shizuku.Shizuku
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 /** Debug-only physical-device check. No launcher entry and excluded from release APKs. */
@@ -33,8 +35,13 @@ class SamsungProbeActivity : ComponentActivity() {
                     worker.restore(before)
                     check(worker.snapshot().contentEquals(before)) { "Restoration mismatch" }
                     if (intent.getStringExtra("scenario") == "lifecycle") verifyLifecycle()
+                    if (intent.getStringExtra("scenario") == "fade") verifyFade()
                     "PASS: root-free helper uid=${Shizuku.getUid()}, same-value restore verified, values=${before.toList()}" +
-                        if (intent.getStringExtra("scenario") == "lifecycle") "; lifecycle: foreground/background, pause/resume, manual-off, helper reconnect, exact restore passed" else ""
+                        when (intent.getStringExtra("scenario")) {
+                            "lifecycle" -> "; lifecycle: foreground/background, pause/resume, manual-off, helper reconnect, exact restore passed"
+                            "fade" -> "; timed background fade and exact restore passed"
+                            else -> ""
+                        }
                 }
                 text.text = result
                 Log.i("BnlSamsungProbe", result)
@@ -44,6 +51,47 @@ class SamsungProbeActivity : ComponentActivity() {
                 text.text = result
                 Log.e("BnlSamsungProbe", result, error)
                 filesDir.resolve("samsung-probe-result.txt").writeText(result)
+            }
+        }
+    }
+
+    private suspend fun verifyFade() {
+        val saved = profiles.profiles.first()
+        check(!saved.enabled && saved.originalSettings == null)
+        val original = bridge.requireWorker().snapshot()
+        val target = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES).plusMinutes(2)
+        fun minute(time: ZonedDateTime) = time.hour * 60 + time.minute
+        val trace = mutableListOf<Pair<String, Int>>()
+        try {
+            profiles.update { SamsungProfile(
+                enabled = true,
+                day = SamsungPhase(0, minute(target.minusHours(6)), 0),
+                sunset = SamsungPhase(2, minute(target.minusHours(2)), 0),
+                night = SamsungPhase(8, minute(target), 1),
+            ) }
+            SamsungAutomationService.start(this)
+            withTimeout(15_000) {
+                while (control.readState().level != 2 || !control.readState().active) delay(200)
+            }
+            withContext(Dispatchers.Main) { moveTaskToBack(true) }
+            while (ZonedDateTime.now().isBefore(target.plusSeconds(7))) {
+                val state = control.readState()
+                check(state.active)
+                trace += ZonedDateTime.now().toString() to state.level
+                filesDir.resolve("samsung-fade-trace.txt").writeText(trace.joinToString("\n") { "${it.first} ${it.second}" })
+                delay(2_000)
+            }
+            val levels = trace.map { it.second }
+            check(levels.first() == 2 && levels.last() == 8) { "Wrong fade endpoints: $levels" }
+            check(levels.zipWithNext().all { (a, b) -> b >= a }) { "Fade reversed: $levels" }
+            check(levels.distinct().count { it in 3..7 } >= 3) { "Missing intermediate levels: $levels" }
+        } finally {
+            withContext(NonCancellable) {
+                profiles.update { it.copy(enabled = false) }
+                automation.reconcile()
+                check(bridge.requireWorker().snapshot().contentEquals(original))
+                check(profiles.profiles.first().originalSettings == null)
+                profiles.update { saved }
             }
         }
     }

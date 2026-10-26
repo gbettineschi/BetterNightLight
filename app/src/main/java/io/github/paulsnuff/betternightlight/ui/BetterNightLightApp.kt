@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -22,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -175,24 +177,27 @@ fun BetterNightLightApp(viewModel: AppViewModel) {
                     .bottomBarNestedScroll(bottomBarHideController)
                     .padding(top = innerPadding.calculateTopPadding()),
         ) { pageIndex ->
-            when (destinations[pageIndex]) {
-                TopLevelDestination.HOME -> {
-                    HomeRoute(
-                        contentBottomPadding = contentBottomPadding,
-                    )
-                }
+            // Dialog dismissal restores keyboard focus; offscreen pages must not steal it.
+            Box(Modifier.focusProperties { canFocus = pageIndex == pagerState.currentPage }) {
+                when (destinations[pageIndex]) {
+                    TopLevelDestination.HOME -> {
+                        HomeRoute(
+                            contentBottomPadding = contentBottomPadding,
+                        )
+                    }
 
-                TopLevelDestination.SETTINGS -> {
-                    SettingsRoute(
-                        viewModel = viewModel,
-                        contentBottomPadding = contentBottomPadding,
-                    )
-                }
+                    TopLevelDestination.SETTINGS -> {
+                        SettingsRoute(
+                            viewModel = viewModel,
+                            contentBottomPadding = contentBottomPadding,
+                        )
+                    }
 
-                TopLevelDestination.ABOUT -> {
-                    AboutRoute(
-                        contentBottomPadding = contentBottomPadding,
-                    )
+                    TopLevelDestination.ABOUT -> {
+                        AboutRoute(
+                            contentBottomPadding = contentBottomPadding,
+                        )
+                    }
                 }
             }
         }
