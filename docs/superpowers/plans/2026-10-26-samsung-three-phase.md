@@ -69,12 +69,12 @@
 - [x] Add simple Day/Sunset/Night sliders, fade minutes, time pickers, solar/manual selection, coordinates and existing device-location provider access.
 - [x] Show actual helper/automation/native state, an explicit Shizuku connection action, pause/resume and stop/restore controls.
 - [x] Tile uses the same atomic profile and reconciliation path; unavailable helper cannot look like successful control. Long press opens the app.
-- [ ] Validate visible controls, target edits and tile state on the phone; verify AOSP builds retain their existing route. Commit.
+- [x] Validate visible controls, target edits and tile state on the phone; verify AOSP builds retain their existing route. Commit.
 
 ### Task 5: Final verification and delivery
 
 - [x] Run the complete JVM suite, debug build, and lint; record failures rather than hiding them.
-- [ ] Install under a distinct application ID; test actual three-stage settings, short fade, background operation, manual-off, tile pause/resume and exact restore. Keep reboot validation distinct if a real reboot is not performed.
+- [x] Install under a distinct application ID; test actual three-stage settings, short fade, background operation, manual-off, tile pause/resume and exact restore. Keep reboot validation distinct if a real reboot is not performed.
 - [x] Obtain a fresh whole-branch review using the executing-plans review procedure, fix material findings with regression tests, and rerun required checks.
 - [x] Update README with setup, Shizuku restart requirement, eleven-level limitation, restoration behavior and verified/unverified scope.
 - [x] Commit and push the feature branch to the explicitly requested fork, copy a signed APK into outputs, and provide the fork/branch and APK links.
