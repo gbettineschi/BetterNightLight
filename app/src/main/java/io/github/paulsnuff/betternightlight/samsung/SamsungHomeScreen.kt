@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.paulsnuff.betternightlight.R
 import io.github.paulsnuff.betternightlight.domain.SunTimesCalculator
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -47,7 +48,13 @@ fun SamsungHomeRoute(
 ) {
     val ui by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    LifecycleResumeEffect(Unit) { viewModel.refresh(); onPauseOrDispose { } }
+    var calendar by remember { mutableStateOf(LocalDate.now() to ZoneId.systemDefault()) }
+    LifecycleResumeEffect(Unit) {
+        val zone = ZoneId.systemDefault()
+        calendar = LocalDate.now(zone) to zone
+        viewModel.refresh()
+        onPauseOrDispose { }
+    }
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         if (result.values.any { it }) viewModel.fetchLocation()
         else viewModel.showError("Allow location access, or enter coordinates.")
@@ -60,9 +67,9 @@ fun SamsungHomeRoute(
     val formatter = remember(DateFormat.is24HourFormat(context)) {
         DateTimeFormatter.ofPattern(if (DateFormat.is24HourFormat(context)) "HH:mm" else "h:mm a")
     }
-    val sun = remember(profile.useSunTimes, profile.latitude, profile.longitude, LocalDate.now()) {
+    val sun = remember(profile.useSunTimes, profile.latitude, profile.longitude, profile.sunriseOffsetMinutes, profile.sunsetOffsetMinutes, calendar) {
         if (profile.useSunTimes && profile.latitude != null && profile.longitude != null && validation == null)
-            runCatching { SunTimesCalculator.compute(profile.latitude, profile.longitude) }.getOrNull()
+            runCatching { samsungSolarTimes(profile, SunTimesCalculator.compute(profile.latitude, profile.longitude, calendar.first, calendar.second)) }.getOrNull()
         else null
     }
 
@@ -129,6 +136,9 @@ fun SamsungHomeRoute(
                 Switch(profile.useSunTimes, viewModel::setSolar, enabled = ui.loaded)
             }
             if (profile.useSunTimes) {
+                SolarOffsetControl("Sunrise", profile.sunriseOffsetMinutes, ui.loaded, viewModel::setSunriseOffset)
+                SolarOffsetControl("Sunset", profile.sunsetOffsetMinutes, ui.loaded, viewModel::setSunsetOffset)
+                Text("Negative is earlier; positive is later. Each fade finishes at the adjusted time.", style = MaterialTheme.typography.bodySmall)
                 Text(if (profile.latitude != null && profile.longitude != null) "Saved location: %.4f, %.4f".format(Locale.ROOT, profile.latitude, profile.longitude) else "Choose a location for sun times.")
                 Text("If sun times are unavailable, your manual times are used.", style = MaterialTheme.typography.bodySmall)
                 OutlinedButton(onClick = {
@@ -214,4 +224,29 @@ private fun CoordinatesDialog(profile: SamsungProfile, onDismiss: () -> Unit, on
         }
     }, confirmButton = { TextButton(onClick = { onSave(lat!!, lon!!) }, enabled = lat != null && lon != null && lat.isFinite() && lon.isFinite() && lat in -90.0..90.0 && lon in -180.0..180.0) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
+}
+
+@Composable
+private fun SolarOffsetControl(label: String, minutes: Int, enabled: Boolean, onChange: (Int) -> Unit) {
+    var editing by remember { mutableStateOf(false) }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text("$label offset", modifier = Modifier.weight(1f))
+        IconButton(onClick = { onChange((minutes - 5).coerceIn(-240, 240)) }, enabled = enabled && minutes > -240,
+            modifier = Modifier.semantics { contentDescription = "Decrease $label offset" }) { Text("−") }
+        TextButton(onClick = { editing = true }, enabled = enabled) { Text(if (minutes > 0) "+$minutes min" else "$minutes min") }
+        IconButton(onClick = { onChange((minutes + 5).coerceIn(-240, 240)) }, enabled = enabled && minutes < 240,
+            modifier = Modifier.semantics { contentDescription = "Increase $label offset" }) { Text("+") }
+    }
+    if (editing) {
+        var text by remember { mutableStateOf(minutes.toString()) }
+        val value = text.toIntOrNull()
+        AlertDialog(onDismissRequest = { editing = false }, title = { Text("$label offset") }, text = {
+            OutlinedTextField(text, { input ->
+                text = input.replace('−', '-').filterIndexed { index, c -> c.isDigit() || (index == 0 && (c == '-' || c == '+')) }.take(4)
+            }, label = { Text("Minutes (−240 to +240)") }, supportingText = { Text("Negative: earlier. Positive: later.") },
+                singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text))
+        }, confirmButton = {
+            TextButton(onClick = { onChange(value!!); editing = false }, enabled = value != null && value in -240..240) { Text("Save") }
+        }, dismissButton = { TextButton(onClick = { editing = false }) { Text("Cancel") } })
+    }
 }

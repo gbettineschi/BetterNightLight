@@ -19,9 +19,13 @@ class SamsungProfileRepositoryTest {
         finally { scope.coroutineContext[Job]!!.cancelAndJoin(); folder.deleteRecursively() }
     }
     @Test fun profileAndRestoreSnapshotSurviveANewRepositoryInstance() = withStore { repo, data, runtime ->
-        val expected = SamsungProfile(enabled = true, paused = true, day = SamsungPhase(2, 480, 30), night = SamsungPhase(9, 60, 120), useSunTimes = true, latitude = 46.5, longitude = 6.6, originalSettings = listOf(4, 1, 0, 2, 1), lastAppliedLevel = 7)
+        val expected = SamsungProfile(enabled = true, paused = true, day = SamsungPhase(2, 480, 30), night = SamsungPhase(9, 60, 120), useSunTimes = true, latitude = 46.5, longitude = 6.6, sunriseOffsetMinutes = -25, sunsetOffsetMinutes = 40, originalSettings = listOf(4, 1, 0, 2, 1), lastAppliedLevel = 7)
         repo.update { expected }
         assertEquals(expected, SamsungProfileRepository(data, runtime).profiles.first())
+    }
+    @Test fun oldPreferencesDefaultToUnshiftedSunEvents() = withStore { repo, _, _ ->
+        val profile = repo.profiles.first()
+        assertEquals(0, profile.sunriseOffsetMinutes); assertEquals(0, profile.sunsetOffsetMinutes)
     }
     @Test fun concurrentEditsKeepBothFieldsInsteadOfWritingStaleCopies() = withStore { repo, _, _ ->
         coroutineScope {
@@ -52,9 +56,12 @@ class SamsungProfileRepositoryTest {
             it[stringPreferencesKey("samsung_original_settings")] = "4,1,0,2,1"
             it[androidx.datastore.preferences.core.intPreferencesKey("samsung_last_level")] = 7
             it[androidx.datastore.preferences.core.intPreferencesKey("samsung_day_fade")] = 42
+            it[androidx.datastore.preferences.core.intPreferencesKey("samsung_sunrise_offset")] = -15
+            it[androidx.datastore.preferences.core.intPreferencesKey("samsung_sunset_offset")] = 35
         }
         val restored = SamsungProfileRepository(data, runtime).profiles.first()
         assertEquals(42, restored.day.fadeMinutes)
+        assertEquals(-15, restored.sunriseOffsetMinutes); assertEquals(35, restored.sunsetOffsetMinutes)
         assertFalse(restored.enabled); assertFalse(restored.paused)
         assertNull(restored.originalSettings); assertNull(restored.lastAppliedLevel)
     }

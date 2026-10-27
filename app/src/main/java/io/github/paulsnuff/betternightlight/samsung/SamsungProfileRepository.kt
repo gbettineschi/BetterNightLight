@@ -68,6 +68,8 @@ class SamsungProfileRepository @Inject constructor(
             night = phase("night", defaults.night),
             useSunTimes = p[SOLAR] ?: false,
             latitude = p[LATITUDE], longitude = p[LONGITUDE],
+            sunriseOffsetMinutes = p[SUNRISE_OFFSET] ?: 0,
+            sunsetOffsetMinutes = p[SUNSET_OFFSET] ?: 0,
             // Never turn a malformed saved snapshot into null: that would permit overwriting it.
             originalSettings = p[ORIGINAL]?.split(',')?.map { it.toIntOrNull() ?: Int.MIN_VALUE },
             lastAppliedLevel = p[LAST_LEVEL],
@@ -76,6 +78,7 @@ class SamsungProfileRepository @Inject constructor(
 
     private fun encode(p: MutablePreferences, profile: SamsungProfile) {
         p[ENABLED] = profile.enabled; p[PAUSED] = profile.paused; p[SOLAR] = profile.useSunTimes
+        p[SUNRISE_OFFSET] = profile.sunriseOffsetMinutes; p[SUNSET_OFFSET] = profile.sunsetOffsetMinutes
         listOf("day" to profile.day, "sunset" to profile.sunset, "night" to profile.night).forEach { (name, phase) ->
             p[intPreferencesKey("samsung_${name}_level")] = phase.level
             p[intPreferencesKey("samsung_${name}_minute")] = phase.minute
@@ -92,6 +95,8 @@ class SamsungProfileRepository @Inject constructor(
         val ENABLED = booleanPreferencesKey("samsung_enabled")
         val PAUSED = booleanPreferencesKey("samsung_paused")
         val SOLAR = booleanPreferencesKey("samsung_solar")
+        val SUNRISE_OFFSET = intPreferencesKey("samsung_sunrise_offset")
+        val SUNSET_OFFSET = intPreferencesKey("samsung_sunset_offset")
         val LATITUDE = doublePreferencesKey("samsung_latitude")
         val LONGITUDE = doublePreferencesKey("samsung_longitude")
         val ORIGINAL = stringPreferencesKey("samsung_original_settings")

@@ -13,14 +13,20 @@ fun resolveSamsungLevel(
     val targets = (-1L..2L).flatMap { offset ->
         val date = now.toLocalDate().plusDays(offset)
         fun manual(phase: SamsungPhase) = date.atTime(phase.minute / 60, phase.minute % 60).atZone(now.zone)
-        val sun = if (profile.useSunTimes) try { sunTimes(date) } catch (_: Exception) { null } else null
+        val sun = if (profile.useSunTimes) try { samsungSolarTimes(profile, sunTimes(date)) } catch (_: Exception) { null } else null
         listOf(
             TimedTarget((sun?.sunrise ?: manual(profile.day)).toInstant(), profile.day.level, profile.day.fadeMinutes),
             TimedTarget((sun?.sunset ?: manual(profile.sunset)).toInstant(), profile.sunset.level, profile.sunset.fadeMinutes),
             TimedTarget(manual(profile.night).toInstant(), profile.night.level, profile.night.fadeMinutes),
-        )
+        ).mapIndexed { phasePriority, target -> phasePriority to target }
     }
     // A spring-forward gap (or a solar/manual coincidence) can map two targets to
     // one instant. The later phase wins: Night, then Sunset, then Day.
-    return interpolateLevel(now.toInstant(), targets.associateBy { it.at }.values.toList())
+    val distinct = targets.sortedBy { it.first }.associate { (_, target) -> target.at to target }.values.toList()
+    return interpolateLevel(now.toInstant(), distinct)
 }
+
+fun samsungSolarTimes(profile: SamsungProfile, sun: SunTimesInfo): SunTimesInfo = SunTimesInfo(
+    sunrise = sun.sunrise?.plusMinutes(profile.sunriseOffsetMinutes.toLong()),
+    sunset = sun.sunset?.plusMinutes(profile.sunsetOffsetMinutes.toLong()),
+)

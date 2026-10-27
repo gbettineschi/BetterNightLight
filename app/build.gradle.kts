@@ -21,12 +21,12 @@ val commitsSinceTag: Int =
         .substringBefore("-")
         .toIntOrNull() ?: 0
 
-val appVersionName: String = "${latestTag.ifEmpty { "1.0.0" }}-samsung.1"
+val appVersionName: String = "${latestTag.ifEmpty { "1.0.0" }}-samsung.2"
 
 val appVersionCode: Int =
     appVersionName.substringBefore("-").split(".").let { parts ->
         fun part(i: Int) = parts.getOrElse(i) { "0" }.toIntOrNull() ?: 0
-        part(0) * 1_000_000 + part(1) * 1_000 + part(2)
+        part(0) * 1_000_000 + part(1) * 1_000 + part(2) + 1
     }
 
 val devKeystoreExists: Provider<Boolean> =

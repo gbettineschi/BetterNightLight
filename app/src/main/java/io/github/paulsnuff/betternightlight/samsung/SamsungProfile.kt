@@ -11,10 +11,15 @@ data class SamsungProfile(
     val useSunTimes: Boolean = false,
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val sunriseOffsetMinutes: Int = 0,
+    val sunsetOffsetMinutes: Int = 0,
     val originalSettings: List<Int>? = null,
     val lastAppliedLevel: Int? = null,
 ) {
     fun validationError(): String? {
+        if (sunriseOffsetMinutes !in -240..240 || sunsetOffsetMinutes !in -240..240) {
+            return "Choose sunrise and sunset offsets between −240 and +240 minutes."
+        }
         val phases = listOf(day, sunset, night)
         if (phases.any { it.level !in 0..10 || it.minute !in 0..1439 || it.fadeMinutes !in 0..240 }) {
             return "Choose warmth 0–10, valid times, and fades between 0 and 240 minutes."

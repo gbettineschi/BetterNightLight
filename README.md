@@ -5,7 +5,7 @@ A personal Samsung-compatible fork of [Better Night Light by paulsnuff](https://
 ## Samsung features
 
 - **Day, Sunset and Night** warmth targets, each with its own fade duration (0–240 minutes).
-- Manual target times, or sunrise and sunset from a saved location; Night has a chosen clock time.
+- Manual target times, or sunrise and sunset from a saved location; Night has a chosen clock time. Sunrise and sunset each have an independent −240…+240 minute offset (negative earlier, positive later), with quick ±5-minute buttons and exact signed-minute entry. Fades finish at the adjusted times; manual fallback times stay unchanged.
 - Eleven native Custom-mode warmth levels, 0–10. These are not calibrated Kelvin values. A long fade advances through these discrete levels rather than using an overlay to interpolate finer colors.
 - A dedicated **Night Light Quick Settings tile**: first tap enables the schedule; subsequent taps pause/resume. Long press opens the app. The app’s master switch stops automation and restores the previous Samsung configuration.
 - Persistent pause, including when you switch Eye comfort shield off yourself.
@@ -22,6 +22,8 @@ A personal Samsung-compatible fork of [Better Night Light by paulsnuff](https://
 When Shizuku is unavailable, automatic updates and this app’s tile cannot control the native filter. The phone’s own Eye comfort shield tile remains available to turn it off. Reopen this app and reconnect Shizuku to finish any pending restore.
 
 Sunrise/sunset uses saved coordinates; fetching a location is an explicit foreground action. If solar times cannot be calculated, manual times are used. Keep the three manual times distinct. System time-zone changes are followed automatically. If two targets resolve to the same instant (for example during the spring clock change), Night takes priority over Sunset, then Day.
+
+About reports the Samsung backend, live Shizuku connection and native filter state. The one-time AOSP secure-settings permission check does not apply to Samsung.
 
 ## Compatibility and validation
 

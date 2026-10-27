@@ -212,7 +212,7 @@ fun AboutScreenContent(
 @Composable
 internal fun AboutHeader(modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
-    val githubUrl = stringResource(R.string.about_github_url)
+    val githubUrl = stringResource(R.string.about_fork_github_url)
     val upstreamUrl = stringResource(R.string.about_upstream_github_url)
     val context = LocalContext.current
     val versionName =

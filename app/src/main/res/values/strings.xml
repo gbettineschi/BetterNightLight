@@ -152,4 +152,5 @@
     <string name="notification_text">Adjusting Night Light according to your schedule.</string>
     <string name="about_upstream_github_url" translatable="false">https://github.com/paulsnuff/BetterNightLight</string>
     <string name="about_original_project">Original project by paulsnuff</string>
+    <string name="about_fork_github_url" translatable="false">https://github.com/gbettineschi/BetterNightLight</string>
 </resources>
