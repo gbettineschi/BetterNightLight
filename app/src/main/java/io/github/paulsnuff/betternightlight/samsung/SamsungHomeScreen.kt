@@ -2,6 +2,9 @@ package io.github.paulsnuff.betternightlight.samsung
 
 import android.Manifest
 import android.app.StatusBarManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -33,6 +36,8 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.paulsnuff.betternightlight.R
 import io.github.paulsnuff.betternightlight.domain.SunTimesCalculator
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.LocalTime
@@ -48,13 +53,23 @@ fun SamsungHomeRoute(
 ) {
     val ui by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var calendar by remember { mutableStateOf(LocalDate.now() to ZoneId.systemDefault()) }
-    LifecycleResumeEffect(Unit) {
-        val zone = ZoneId.systemDefault()
-        calendar = LocalDate.now(zone) to zone
-        viewModel.refresh()
-        onPauseOrDispose { }
+    val calendarEvents = remember(context) {
+        callbackFlow {
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) { trySend(Unit) }
+            }
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_TIME_TICK); addAction(Intent.ACTION_DATE_CHANGED)
+                addAction(Intent.ACTION_TIME_CHANGED); addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            }
+            ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+            trySend(Unit)
+            awaitClose { context.unregisterReceiver(receiver) }
+        }
     }
+    val calendar by remember(calendarEvents) { samsungSolarCalendar(calendarEvents) }
+        .collectAsStateWithLifecycle(initialValue = SamsungSolarCalendar(LocalDate.now(), ZoneId.systemDefault()))
+    LifecycleResumeEffect(Unit) { viewModel.refresh(); onPauseOrDispose { } }
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         if (result.values.any { it }) viewModel.fetchLocation()
         else viewModel.showError("Allow location access, or enter coordinates.")
@@ -69,7 +84,7 @@ fun SamsungHomeRoute(
     }
     val sun = remember(profile.useSunTimes, profile.latitude, profile.longitude, profile.sunriseOffsetMinutes, profile.sunsetOffsetMinutes, calendar) {
         if (profile.useSunTimes && profile.latitude != null && profile.longitude != null && validation == null)
-            runCatching { samsungSolarTimes(profile, SunTimesCalculator.compute(profile.latitude, profile.longitude, calendar.first, calendar.second)) }.getOrNull()
+            runCatching { samsungSolarTimes(profile, SunTimesCalculator.compute(profile.latitude, profile.longitude, calendar.date, calendar.zone)) }.getOrNull()
         else null
     }
 

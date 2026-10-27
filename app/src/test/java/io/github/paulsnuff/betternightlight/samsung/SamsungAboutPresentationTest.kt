@@ -19,6 +19,11 @@ class SamsungAboutPresentationTest {
         assertTrue(result.supported); assertFalse(result.helperReady)
         assertNull(result.nativeActive); assertNull(result.warmth)
     }
+    @Test fun adaptiveSamsungModeDoesNotExposeSavedCustomStrengthAsCurrentWarmth() {
+        val result = samsungAboutPresentation(true, SamsungConnection.READY, SamsungNativeState(true, 6, false))
+        assertTrue(result.supported); assertTrue(result.helperReady)
+        assertEquals(true, result.nativeActive); assertNull(result.warmth)
+    }
     @Test fun unsupportedServiceAndInvalidStrengthAreNotPresentedAsHealthyData() {
         val result = samsungAboutPresentation(false, SamsungConnection.READY, SamsungNativeState(true, 99, false))
         assertFalse(result.supported); assertNull(result.warmth)

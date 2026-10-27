@@ -150,4 +150,5 @@
     <string name="notification_channel_name">Automatyzacja Night Light</string>
     <string name="notification_title">Automatyczny Night Light aktywny</string>
     <string name="notification_text">Dostosowuje Night Light zgodnie z harmonogramem.</string>
+    <string name="about_original_project">Oryginalny projekt: paulsnuff</string>
 </resources>

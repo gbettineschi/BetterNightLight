@@ -20,5 +20,5 @@ fun samsungAboutPresentation(supported: Boolean, connection: SamsungConnection, 
             SamsungConnection.FAILED -> "Reconnect Shizuku"
         },
         nativeActive = native?.active,
-        warmth = native?.takeIf { supported && it.active && it.level in 0..10 }?.level,
+        warmth = native?.takeIf { supported && it.active && it.customMode && it.level in 0..10 }?.level,
     )

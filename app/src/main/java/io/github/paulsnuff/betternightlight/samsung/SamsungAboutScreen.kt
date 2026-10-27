@@ -46,7 +46,11 @@ fun SamsungAboutRoute(
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 val nativeState = when (status.nativeActive) { true -> "On"; false -> "Off"; null -> "Unknown" }
-                val warmth = status.warmth?.let { "$it/10" } ?: if (status.nativeActive == false) "Not active" else "Unknown"
+                val warmth = status.warmth?.let { "$it/10" } ?: when {
+                    status.nativeActive == false -> "Not active"
+                    status.nativeActive == true && ui.native?.customMode == false -> "Managed by Samsung"
+                    else -> "Unknown"
+                }
                 val automation = when {
                     !ui.loaded -> "Loading…"
                     ui.profile.originalSettings != null && !ui.profile.enabled -> "Restore pending"

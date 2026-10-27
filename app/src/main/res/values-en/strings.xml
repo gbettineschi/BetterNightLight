@@ -149,4 +149,5 @@
     <string name="notification_channel_name">Night Light automation</string>
     <string name="notification_title">Automatic Night Light active</string>
     <string name="notification_text">Adjusting Night Light according to your schedule.</string>
+    <string name="about_original_project">Original project by paulsnuff</string>
 </resources>
