@@ -26,19 +26,19 @@
 
 **Files:** SamsungManualControl.kt, SamsungSchedule.kt, SamsungTargets.kt, SamsungProfile.kt, SamsungProfileRepository.kt and tests.
 **Interfaces:** SamsungManualResumePolicy enum; SamsungManualOverride(policy, changedAt:Instant, resumeAt:Instant?, native:SamsungNativeState). Profile owns manualResumePolicy, manualOverride and derived isPaused. nextScheduledTransition(now, targets):Instant? and nextSamsungTransition(profile, now, sunTimes):Instant?.
-- [ ] Write failing transition tests: next fade start, mid-fade skips its steps/end, instant/equal-level anchor, clipped overlap, midnight/DST/solar offsets.
-- [ ] Add real DataStore roundtrip/portable preference/no-ownership import tests and native-difference tests; observe RED, implement and run full suite GREEN. Commit.
+- [x] Write failing transition tests: next fade start, mid-fade skips its steps/end, instant/equal-level anchor, clipped overlap, midnight/DST/solar offsets.
+- [x] Add real DataStore roundtrip/portable preference/no-ownership import tests and native-difference tests; observe RED, implement and run full suite GREEN. Commit.
 
 ### Task 2: Native-change preservation and timed resume
 
 **Files:** SamsungAutomation.kt, SamsungModule.kt, SamsungAutomationService.kt, coordinator tests/debug fixture.
 **Interfaces:** Inject Clock and next-transition resolver into existing coordinator; existing trailing targetLevel lambda remains compatible. Native observer requests fresh reconciliation.
-- [ ] Tests first: slider/off/on preserve native state, new edits renew hour, restart before/after expiry, next-transition expiry, policy change, native change at expiry, invalid schedule, automatic writes, disable/restore and concurrent pause/resume guards.
-- [ ] Implement manual hold before normal scheduling validation, atomic guarded expiry/resume, original-snapshot preservation and no-backup runtime state. Full suite GREEN; commit.
+- [x] Tests first: slider/off/on preserve native state, new edits renew hour, restart before/after expiry, next-transition expiry, policy change, native change at expiry, invalid schedule, automatic writes, disable/restore and concurrent pause/resume guards.
+- [x] Implement manual hold before normal scheduling validation, atomic guarded expiry/resume, original-snapshot preservation and no-backup runtime state. Full suite GREEN; commit.
 
 ### Task 3: Choices, status and verified delivery
 
 **Files:** SamsungHomeScreen/ViewModel, SamsungTileAction/Presentation, SamsungAboutScreen, build version, README, debug probe and validation docs.
-- [ ] Add three radio choices and manual-control/resume-time status; Resume button/tile clears overrides. Test tile status/actions before implementation.
-- [ ] Full JVM suite, debug/release builds and lint; fresh final read-only review of this request delta, one material fix pass with RED→GREEN regressions.
-- [ ] Physical S23 checks for native toggle and slider freedom, radio persistence, Resume, aged-timestamp timer recovery if feasible, and exact restoration of the owner's profile/settings. Install final signed APK, update existing draft PR, record limits honestly.
+- [x] Add three radio choices and manual-control/resume-time status; Resume button/tile clears overrides. Test tile status/actions before implementation.
+- [x] Full JVM suite, debug/release builds and lint; fresh final read-only review of this request delta, one material fix pass with RED→GREEN regressions.
+- [x] Physical S23 checks for native toggle and slider freedom, radio persistence, Resume, aged-timestamp timer recovery if feasible, and exact restoration of the owner's profile/settings. Install final signed APK, update existing draft PR, record limits honestly.

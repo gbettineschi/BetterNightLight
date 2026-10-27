@@ -1,0 +1,5 @@
+2026-10-27T09:47:03.106695Z PASS manual slider/off/on preserved without native writes by automation
+2026-10-27T09:47:11.494934Z PASS ONE_HOUR policy expired after aging this test record by 3596 seconds; native level3 resumed
+2026-10-27T09:47:12.817418Z Holding native6 until actual next scheduled transition 2026-10-27T10:49+01:00[Europe/Zurich]
+2026-10-27T09:49:02.792793Z PASS actual next-transition expiry resumed native8
+2026-10-27T09:49:04.694119Z Original profile restored; current user automation reconciled

@@ -71,3 +71,19 @@ Sunrise and sunset have independent −240…+240 minute offsets, default 0. The
 All **61 JVM tests** pass, along with debug/release builds and both lints. Coverage includes zero/default migration, real DataStore/portable persistence, earlier/later targets, offset fade completion, midnight crossing, DST elapsed minutes, null-event manual fallback and cross-date phase collision priority. A fresh review found two important issues; adaptive warmth reporting and live preview-calendar refresh were corrected with three observed failing-then-passing tests. There were no critical findings or deferred minors. An initial missing English/Polish credit translation failed lint; both translations were added and lint passed without suppression.
 
 The preview uses the same solar shift as scheduling and refreshes on date/time/timezone/minute events while visible. The calendar flow's midnight and timezone changes are unit-tested without a pause/resume cycle; the phone's actual clock/timezone were not changed for testing. Earlier reboot/overnight/other-device limits remain.
+
+## Native manual control and automatic resume — 1.0.4-samsung.3
+
+The user requested the three manual-change choices shown in their reference. Native Samsung activation, warmth and mode changes now start a separate manual override; the app leaves subsequent native changes alone. Choices are next scheduled transition (default), one hour from the latest observed native change, or manual Resume. The next transition means its clipped fade start, with instant/equal-level phases using the anchor; individual steps and the current fade's end do not cancel the override. Resume reapplies the schedule's current value. Explicit own-app/tile Pause keeps its prior filter-off behavior.
+
+Automated evidence: **87 JVM tests**, debug/release builds and both lints passed. Tests include native slider/off/on changes, scheduled zero, renewed hour, changes at expiry, coordinator restart, policy and schedule edits, guarded slow reads, original restoration, partially failed automatic-off, portable policy versus device-only ownership, and next-transition boundaries across offsets/midnight/DST/overlapping fades. A fresh read-only review found no critical, important or minor issue requiring changes.
+
+Physical S23 evidence:
+
+- A debug-only fixture held native warmth 7, switched native off and back on at 5 without automation undoing it.
+- ONE_HOUR expiry and return to scheduled native level 3 were exercised by aging only the app's test timestamp by 3596 seconds. This is **not a real one-hour wait**; the full 3600-second boundary is covered by the injected-clock JVM tests.
+- NEXT_CHANGE held native level 6 until an actual scheduled instant at 10:49 Europe/Zurich, then resumed native level 8. See the [timestamped trace](samsung-manual-control-trace-2026-10-27.txt).
+- The final optimized signed release was installed. All three radio choices were exercised. The actual Samsung Quick Settings tile switched off and back on without being overridden; its long-press opened Samsung settings. The actual Samsung colour-temperature slider was moved to level 8 and remained there through subsequent reconciliations.
+- Choosing one hour showed a resume time. Resume in the app and in its own tile both returned to the current scheduled value. The owner's original profile, native eight-key baseline, schedule activation and screen-awake preference were restored. Default NEXT_CHANGE is selected.
+
+A mere tap that leaves every observed native value unchanged is not a detectable change; tracking the gesture itself would require additional UI integration/permissions, which were not introduced. Full reboot, an actual unattended one-hour wait, overnight operation and other-device/One UI acceptance remain unverified. No system clock or global Shizuku-server stop was used.
