@@ -44,7 +44,8 @@ class SamsungAutomationTest {
         val store = Store(SamsungProfile(enabled = true, originalSettings = original, lastAppliedLevel = 6))
         val control = Control(listOf(6, 0, 1, 0, 0))
         SamsungAutomation(store, control) { 8 }.reconcile()
-        assertTrue(store.profiles.value.paused)
+        assertTrue(store.profiles.value.isPaused)
+        assertNotNull(store.profiles.value.manualOverride)
         assertEquals(0, control.values[4])
         assertEquals(original, store.profiles.value.originalSettings)
     }

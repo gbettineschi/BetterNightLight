@@ -113,12 +113,12 @@ class SamsungProbeActivity : ComponentActivity() {
             await { val state = control.readState(); state.active && state.level == 3 }
             profiles.update { it.copy(paused = true) }
             await { !control.readState().active }
-            profiles.update { it.copy(paused = false, lastAppliedLevel = null) }
+            profiles.update { it.copy(paused = false, manualOverride = null, lastAppliedLevel = null) }
             await { control.readState().active }
             control.pause() // Same native change as switching Eye comfort shield off manually.
-            await { profiles.profiles.first().paused }
+            await { profiles.profiles.first().isPaused }
             check(!control.readState().active)
-            profiles.update { it.copy(paused = false, lastAppliedLevel = null) }
+            profiles.update { it.copy(paused = false, manualOverride = null, lastAppliedLevel = null) }
             await { control.readState().active }
             withContext(Dispatchers.Main) { moveTaskToBack(true) }
             runCatching { bridge.requireWorker().destroy() } // Only this app's child, never the Shizuku server.

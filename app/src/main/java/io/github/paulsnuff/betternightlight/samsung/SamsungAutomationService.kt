@@ -25,6 +25,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,6 +35,7 @@ import javax.inject.Inject
 class SamsungAutomationService : Service() {
     @Inject lateinit var automation: SamsungAutomation
     @Inject lateinit var profiles: SamsungProfileRepository
+    @Inject lateinit var device: SamsungDevice
     @Inject lateinit var watchdog: AutomationWorkScheduler
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var lastNotification: String? = null
@@ -54,6 +57,10 @@ class SamsungAutomationService : Service() {
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
         watchdog.schedulePeriodicWork()
         scope.launch { profiles.profiles.collect { tick() } }
+        scope.launch {
+            device.observe().conflate().catch { error -> Log.w("BnlSamsungService", "Native observer unavailable; periodic checks remain active", error) }
+                .collect { tick() }
+        }
         scope.launch {
             while (true) { tick(); delay(5_000) }
         }

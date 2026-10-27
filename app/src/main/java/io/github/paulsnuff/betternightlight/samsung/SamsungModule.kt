@@ -42,7 +42,7 @@ object SamsungModule {
     @Provides
     @Singleton
     fun automation(store: SamsungProfileStore, control: SamsungControl, clock: Clock): SamsungAutomation =
-        SamsungAutomation(store, control) { profile ->
+        SamsungAutomation(store, control, clock = clock) { profile ->
             // Resolve the current system zone on each tick, including after a timezone change.
             resolveSamsungLevel(profile, ZonedDateTime.ofInstant(clock.instant(), ZoneId.systemDefault()))
         }
