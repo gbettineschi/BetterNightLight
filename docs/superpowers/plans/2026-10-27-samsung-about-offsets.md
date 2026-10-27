@@ -25,14 +25,14 @@
 
 **Files:** AboutScreen.kt; new samsung/SamsungAboutPresentation.kt and tests.
 **Interface:** samsungAboutPresentation(supported, connection, native) gives supported/connected/native/warmth display state; Samsung route uses existing SamsungHomeViewModel, AOSP route retains AboutViewModel.
-- [ ] Reproduce old AOSP-only checks; add failing tests for supported+connected, disconnected helper, inactive vs unsupported and invalid native strength.
-- [ ] Implement genuine Samsung presentation and route, fork link/upstream credit; run testDebugUnitTest and commit.
+- [x] Reproduce old AOSP-only checks; add failing tests for supported+connected, disconnected helper, inactive vs unsupported and invalid native strength.
+- [x] Implement genuine Samsung presentation and route, fork link/upstream credit; run testDebugUnitTest and commit.
 
 ### Task 2: Solar offsets and delivery
 
 **Files:** SamsungProfile.kt, SamsungProfileRepository.kt, SamsungTargets.kt, SamsungHomeViewModel.kt, SamsungHomeScreen.kt; matching tests; app/build.gradle.kts; README.
 **Interface:** sunriseOffsetMinutes and sunsetOffsetMinutes default 0; samsungSolarTimes applies offsets only to non-null solar instants. Resolver and previews consume it.
-- [ ] Add profile fields/contracts and failing tests for signed offsets/fade timing, midnight/DST collisions, missing-event fallback, bounds and DataStore/portable persistence/defaults.
-- [ ] Implement persistence, shared solar transformation, preview and signed dialogs; run full suite, debug/release builds and lint. Commit.
-- [ ] Fresh final source review over this request's branch delta; one material-fix pass with regression tests.
-- [ ] Install the signed update, check About and offset round trips on S23; restore test settings, copy APK and update existing draft PR. Record any unavailable hardware checks explicitly.
+- [x] Add profile fields/contracts and failing tests for signed offsets/fade timing, midnight/DST collisions, missing-event fallback, bounds and DataStore/portable persistence/defaults.
+- [x] Implement persistence, shared solar transformation, preview and signed dialogs; run full suite, debug/release builds and lint. Commit.
+- [x] Fresh final source review over this request's branch delta; one material-fix pass with regression tests.
+- [x] Install the signed update, check About and offset round trips on S23; restore test settings, copy APK and update existing draft PR. Record any unavailable hardware checks explicitly.

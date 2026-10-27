@@ -35,7 +35,7 @@ The JVM suite covers actual schedule interpolation (including midnight, overlapp
 
 A new regression test reproduced a stop/re-enable/pause race during native restoration; the coordinator now preserves the latest requested pause. The test failed before the fix and passed afterward.
 
-## Final device state
+## State after initial acceptance
 
 The installed release is left with automation off and original Samsung filter settings restored. Day / Sunset / Night defaults remain 0 / 5 / 10, manual target times 07:00 / 18:00 / 23:00, and fade durations 60 / 60 / 90 minutes. The app's tile remains added to the expanded Quick Settings grid. The temporary USB screen-awake setting is restored to its original `0`. The Shizuku server remains running; no phone reboot or global Shizuku stop was performed.
 
@@ -61,3 +61,13 @@ The reviewer reported no critical issues or deferred minors. No second review wa
 ## Final build result
 
 `testDebugUnitTest assembleDebug lintDebug assembleRelease lintRelease` succeeded after the review fixes (45 tests, zero failures/errors/skips). The optimized release APK is signed with the same certificate as the installed development APK, contains the Samsung tile, excludes the debug-only probe, and is not debuggable. It was subsequently installed and physically checked on reconnection as recorded above. Existing upstream warnings about dependency versions, translations, an unused expression and native-library stripping remain; lint reports no errors.
+
+## About and solar-offset update — 1.0.4-samsung.2
+
+Signed update installed on the same S23 with its existing authorization and settings preserved. About now checks the Samsung service, live Shizuku connection and native filter state; AOSP-only support/secure-permission warnings are absent. Numeric warmth is shown only for the verified fixed Custom configuration; other active Samsung modes display “Managed by Samsung.” Source links identify the fork and credit the original project.
+
+Sunrise and sunset have independent −240…+240 minute offsets, default 0. Their ±5-minute buttons and exact signed-minute dialogs were physically checked (including −17 and +20), then restored to 0. The owner's original solar/manual mode and automation activation were preserved. The temporary screen-awake setting was restored. No coordinates or other schedule targets were changed.
+
+All **61 JVM tests** pass, along with debug/release builds and both lints. Coverage includes zero/default migration, real DataStore/portable persistence, earlier/later targets, offset fade completion, midnight crossing, DST elapsed minutes, null-event manual fallback and cross-date phase collision priority. A fresh review found two important issues; adaptive warmth reporting and live preview-calendar refresh were corrected with three observed failing-then-passing tests. There were no critical findings or deferred minors. An initial missing English/Polish credit translation failed lint; both translations were added and lint passed without suppression.
+
+The preview uses the same solar shift as scheduling and refreshes on date/time/timezone/minute events while visible. The calendar flow's midnight and timezone changes are unit-tested without a pause/resume cycle; the phone's actual clock/timezone were not changed for testing. Earlier reboot/overnight/other-device limits remain.
