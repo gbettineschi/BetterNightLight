@@ -2,6 +2,7 @@ package io.github.paulsnuff.betternightlight.ui.screens.about
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.os.Build
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.paulsnuff.betternightlight.samsung.SamsungAboutRoute
 import io.github.paulsnuff.betternightlight.R
 import io.github.paulsnuff.betternightlight.data.NightLightStatus
 import io.github.paulsnuff.betternightlight.domain.NightLightController
@@ -64,17 +66,22 @@ import io.github.paulsnuff.betternightlight.ui.components.securesettingspermissi
 import io.github.paulsnuff.betternightlight.ui.theme.BetterNightLightTheme
 
 @Composable
-fun AboutRoute(
+fun AboutRoute(modifier: Modifier = Modifier, contentBottomPadding: Dp = 0.dp) {
+    if (Build.MANUFACTURER.equals("samsung", ignoreCase = true)) {
+        SamsungAboutRoute(modifier, contentBottomPadding)
+    } else {
+        AospAboutRoute(modifier, contentBottomPadding)
+    }
+}
+
+@Composable
+private fun AospAboutRoute(
     modifier: Modifier = Modifier,
     contentBottomPadding: Dp = 0.dp,
     viewModel: AboutViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AboutScreen(
-        uiState = uiState,
-        modifier = modifier,
-        contentBottomPadding = contentBottomPadding,
-    )
+    AboutScreen(uiState = uiState, modifier = modifier, contentBottomPadding = contentBottomPadding)
 }
 
 @Composable
@@ -203,9 +210,10 @@ fun AboutScreenContent(
 }
 
 @Composable
-private fun AboutHeader(modifier: Modifier = Modifier) {
+internal fun AboutHeader(modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
     val githubUrl = stringResource(R.string.about_github_url)
+    val upstreamUrl = stringResource(R.string.about_upstream_github_url)
     val context = LocalContext.current
     val versionName =
         remember {
@@ -266,6 +274,10 @@ private fun AboutHeader(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(text = stringResource(R.string.about_source_code))
+        }
+
+        TextButton(onClick = { uriHandler.openUri(upstreamUrl) }) {
+            Text(stringResource(R.string.about_original_project))
         }
 
         OutlinedButton(
