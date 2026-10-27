@@ -8,7 +8,8 @@ A personal Samsung-compatible fork of [Better Night Light by paulsnuff](https://
 - Manual target times, or sunrise and sunset from a saved location; Night has a chosen clock time. Sunrise and sunset each have an independent −240…+240 minute offset (negative earlier, positive later), with quick ±5-minute buttons and exact signed-minute entry. Fades finish at the adjusted times; manual fallback times stay unchanged.
 - Eleven native Custom-mode warmth levels, 0–10. These are not calibrated Kelvin values. A long fade advances through these discrete levels rather than using an overlay to interpolate finer colors.
 - A dedicated **Night Light Quick Settings tile**: first tap enables the schedule; subsequent taps pause/resume. Long press opens the app. The app’s master switch stops automation and restores the previous Samsung configuration.
-- Persistent pause, including when you switch Eye comfort shield off yourself.
+- **Native manual changes:** touching Samsung's warmth slider, on/off or mode controls pauses automation and keeps your native setting. Choose resume at the next scheduled transition (default), after one hour from the latest native change, or only when you tap Resume. During this hold, native controls remain free to change the filter again.
+- The next scheduled change is the next transition's clipped fade start (or the phase anchor for an instant/equal-level transition), not an individual fade step. Resume reapplies the schedule's current value. Own-app/tile Pause still switches the filter off until Resume; master Off restores the pre-automation configuration.
 - Original native settings saved before takeover; failed restoration remains pending for retry.
 - A foreground service, wake/time-change reconciliation, and a periodic recovery worker. Errors and lost helper access are visible.
 

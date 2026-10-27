@@ -127,9 +127,14 @@ fun SamsungHomeRoute(
                 !profile.enabled && profile.originalSettings != null -> "Restore pending. Reconnect Shizuku to finish."
                 else -> ui.automation.message
             }, color = if (ui.automation.error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(ui.native?.let { if (it.active) "On screen: warmth ${it.level}/10" else "On screen: filter off" } ?: "Reading screen state…", style = MaterialTheme.typography.bodySmall)
-            if (profile.enabled) OutlinedButton(onClick = { viewModel.setPaused(!profile.paused) }, enabled = ready) {
-                Text(if (profile.paused) "Resume" else "Pause")
+            Text(ui.native?.let { if (!it.active) "On screen: filter off" else if (it.customMode) "On screen: warmth ${it.level}/10" else "On screen: managed by Samsung" } ?: "Reading screen state…", style = MaterialTheme.typography.bodySmall)
+            if (profile.enabled) OutlinedButton(onClick = { viewModel.setPaused(!profile.isPaused) }, enabled = ready) {
+                Text(if (profile.isPaused) "Resume" else "Pause")
+            }
+            profile.manualOverride?.resumeAt?.let { deadline ->
+                val local = deadline.atZone(calendar.zone)
+                val date = if (local.toLocalDate() == calendar.date) "" else local.format(DateTimeFormatter.ofPattern("EEE d MMM")) + ", "
+                Text("Resumes at $date${local.format(formatter)}", style = MaterialTheme.typography.bodySmall)
             }
             Text("Turning automation off restores your previous Samsung settings.", style = MaterialTheme.typography.bodySmall)
         }
@@ -162,6 +167,9 @@ fun SamsungHomeRoute(
                 }, enabled = !ui.locating) { Text(if (ui.locating) "Getting location…" else "Use phone location") }
                 TextButton(onClick = { coordinatesDialog = true }) { Text("Enter coordinates") }
             }
+        }
+        SectionCard("Manual changes in Samsung") {
+            SamsungManualControlOptions(profile.manualResumePolicy, ui.loaded, viewModel::setManualResumePolicy)
         }
         OutlinedButton(onClick = {
             if (Build.VERSION.SDK_INT >= 33) runCatching {

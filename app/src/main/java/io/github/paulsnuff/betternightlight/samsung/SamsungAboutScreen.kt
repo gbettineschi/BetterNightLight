@@ -55,6 +55,7 @@ fun SamsungAboutRoute(
                     !ui.loaded -> "Loading…"
                     ui.profile.originalSettings != null && !ui.profile.enabled -> "Restore pending"
                     !ui.profile.enabled -> "Off"
+                    ui.profile.manualOverride != null -> "Manual control"
                     ui.profile.paused -> "Paused"
                     else -> ui.automation.message
                 }

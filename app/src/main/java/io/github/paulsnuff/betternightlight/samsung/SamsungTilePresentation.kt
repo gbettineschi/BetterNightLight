@@ -7,6 +7,7 @@ fun samsungTilePresentation(profile: SamsungProfile, connection: SamsungConnecti
     connection != SamsungConnection.READY -> SamsungTilePresentation(false, "Connect Shizuku")
     status.error -> SamsungTilePresentation(false, "Check app")
     !profile.enabled -> SamsungTilePresentation(false, "Off")
+    profile.manualOverride != null -> SamsungTilePresentation(false, "Manual control")
     profile.paused -> SamsungTilePresentation(false, "Paused")
     else -> SamsungTilePresentation(true, "Automatic")
 }

@@ -87,8 +87,9 @@ class SamsungHomeViewModel @Inject constructor(
         }
     }
 
-    fun setEnabled(enabled: Boolean) = edit { it.copy(enabled = enabled, paused = false, lastAppliedLevel = null) }
-    fun setPaused(paused: Boolean) = edit { it.copy(paused = paused, lastAppliedLevel = null) }
+    fun setEnabled(enabled: Boolean) = edit { it.copy(enabled = enabled, paused = false, manualOverride = null, lastAppliedLevel = null) }
+    fun setPaused(paused: Boolean) = edit { it.copy(paused = paused, manualOverride = null, lastAppliedLevel = null) }
+    fun setManualResumePolicy(policy: SamsungManualResumePolicy) = edit { it.copy(manualResumePolicy = policy) }
     fun setSolar(solar: Boolean) = edit { it.copy(useSunTimes = solar) }
     fun setSunriseOffset(minutes: Int) = edit { it.copy(sunriseOffsetMinutes = minutes.coerceIn(-240, 240)) }
     fun setSunsetOffset(minutes: Int) = edit { it.copy(sunsetOffsetMinutes = minutes.coerceIn(-240, 240)) }
