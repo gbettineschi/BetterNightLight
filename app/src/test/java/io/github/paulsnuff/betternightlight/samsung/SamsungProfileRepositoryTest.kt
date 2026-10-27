@@ -27,6 +27,25 @@ class SamsungProfileRepositoryTest {
         val profile = repo.profiles.first()
         assertEquals(0, profile.sunriseOffsetMinutes); assertEquals(0, profile.sunsetOffsetMinutes)
     }
+    @Test fun nativeOverrideAndChoiceSurviveRestartWithoutEnteringBackup() = withStore { repo, data, runtime ->
+        val override = SamsungManualOverride(SamsungManualResumePolicy.ONE_HOUR, java.time.Instant.parse("2026-10-27T10:00:00Z"), java.time.Instant.parse("2026-10-27T11:00:00Z"), SamsungNativeState(true, 7, true))
+        repo.update { it.copy(manualResumePolicy = SamsungManualResumePolicy.ONE_HOUR, manualOverride = override) }
+        val restarted = SamsungProfileRepository(data, runtime).profiles.first()
+        assertEquals(SamsungManualResumePolicy.ONE_HOUR, restarted.manualResumePolicy)
+        assertEquals(override, restarted.manualOverride)
+        assertTrue(restarted.isPaused)
+        assertFalse(data.data.first().asMap().keys.any { it.name == "samsung_manual_override" })
+    }
+    @Test fun transferredPolicyCannotImportNativeOverrideOwnership() = withStore { _, data, runtime ->
+        data.edit {
+            it[stringPreferencesKey("samsung_manual_resume_policy")] = "ONE_HOUR"
+            it[stringPreferencesKey("samsung_manual_override")] = "old-device-owned-state"
+        }
+        val imported = SamsungProfileRepository(data, runtime).profiles.first()
+        assertEquals(SamsungManualResumePolicy.ONE_HOUR, imported.manualResumePolicy)
+        assertNull(imported.manualOverride)
+        assertFalse(imported.isPaused)
+    }
     @Test fun concurrentEditsKeepBothFieldsInsteadOfWritingStaleCopies() = withStore { repo, _, _ ->
         coroutineScope {
             repeat(20) {

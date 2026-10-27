@@ -9,6 +9,14 @@ fun resolveSamsungLevel(
     now: ZonedDateTime,
     sunTimes: (LocalDate) -> SunTimesInfo = { SunTimesCalculator.compute(profile.latitude!!, profile.longitude!!, it, now.zone) },
 ): Int {
+    return interpolateLevel(now.toInstant(), resolveSamsungTargets(profile, now, sunTimes))
+}
+
+private fun resolveSamsungTargets(
+    profile: SamsungProfile,
+    now: ZonedDateTime,
+    sunTimes: (LocalDate) -> SunTimesInfo,
+): List<TimedTarget> {
     require(profile.validationError() == null) { "Invalid Samsung schedule" }
     val targets = (-1L..2L).flatMap { offset ->
         val date = now.toLocalDate().plusDays(offset)
@@ -23,10 +31,16 @@ fun resolveSamsungLevel(
     // A spring-forward gap (or a solar/manual coincidence) can map two targets to
     // one instant. The later phase wins: Night, then Sunset, then Day.
     val distinct = targets.sortedBy { it.first }.associate { (_, target) -> target.at to target }.values.toList()
-    return interpolateLevel(now.toInstant(), distinct)
+    return distinct
 }
 
 fun samsungSolarTimes(profile: SamsungProfile, sun: SunTimesInfo): SunTimesInfo = SunTimesInfo(
     sunrise = sun.sunrise?.plusMinutes(profile.sunriseOffsetMinutes.toLong()),
     sunset = sun.sunset?.plusMinutes(profile.sunsetOffsetMinutes.toLong()),
 )
+
+fun nextSamsungTransition(
+    profile: SamsungProfile,
+    now: ZonedDateTime,
+    sunTimes: (LocalDate) -> SunTimesInfo = { SunTimesCalculator.compute(profile.latitude!!, profile.longitude!!, it, now.zone) },
+): java.time.Instant? = nextScheduledTransition(now.toInstant(), resolveSamsungTargets(profile, now, sunTimes))

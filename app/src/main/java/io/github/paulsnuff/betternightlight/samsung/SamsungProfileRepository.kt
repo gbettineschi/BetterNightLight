@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,8 +40,8 @@ class SamsungProfileRepository @Inject constructor(
 
     private suspend fun initialize() {
         if (runtime.data.first()[INITIALIZED] == true) return
-        val portable = decode(dataStore.data.first()).copy(
-            enabled = false, paused = false, originalSettings = null, lastAppliedLevel = null,
+        val portable = decode(dataStore.data.first(), includeOwnership = false).copy(
+            enabled = false, paused = false, originalSettings = null, lastAppliedLevel = null, manualOverride = null,
         )
         runtime.edit {
             if (it[INITIALIZED] != true) { encode(it, portable); it[INITIALIZED] = true }
@@ -50,10 +51,10 @@ class SamsungProfileRepository @Inject constructor(
     }
 
     private fun removeOwnership(p: MutablePreferences) {
-        p.remove(ENABLED); p.remove(PAUSED); p.remove(ORIGINAL); p.remove(LAST_LEVEL)
+        p.remove(ENABLED); p.remove(PAUSED); p.remove(ORIGINAL); p.remove(LAST_LEVEL); p.remove(OVERRIDE)
     }
 
-    private fun decode(p: Preferences): SamsungProfile {
+    private fun decode(p: Preferences, includeOwnership: Boolean = true): SamsungProfile {
         val defaults = SamsungProfile()
         fun phase(name: String, fallback: SamsungPhase) = SamsungPhase(
             p[intPreferencesKey("samsung_${name}_level")] ?: fallback.level,
@@ -70,6 +71,9 @@ class SamsungProfileRepository @Inject constructor(
             latitude = p[LATITUDE], longitude = p[LONGITUDE],
             sunriseOffsetMinutes = p[SUNRISE_OFFSET] ?: 0,
             sunsetOffsetMinutes = p[SUNSET_OFFSET] ?: 0,
+            manualResumePolicy = p[RESUME_POLICY]?.let { name -> SamsungManualResumePolicy.entries.find { it.name == name } ?: SamsungManualResumePolicy.MANUAL }
+                ?: SamsungManualResumePolicy.NEXT_CHANGE,
+            manualOverride = if (includeOwnership) p[OVERRIDE]?.let(::decodeOverride) else null,
             // Never turn a malformed saved snapshot into null: that would permit overwriting it.
             originalSettings = p[ORIGINAL]?.split(',')?.map { it.toIntOrNull() ?: Int.MIN_VALUE },
             lastAppliedLevel = p[LAST_LEVEL],
@@ -77,6 +81,11 @@ class SamsungProfileRepository @Inject constructor(
     }
 
     private fun encode(p: MutablePreferences, profile: SamsungProfile) {
+        p[RESUME_POLICY] = profile.manualResumePolicy.name
+        profile.manualOverride?.let { override ->
+            p[OVERRIDE] = listOf(override.policy.name, override.changedAt.toEpochMilli(), override.resumeAt?.toEpochMilli() ?: "-",
+                if (override.native.active) 1 else 0, override.native.level, if (override.native.customMode) 1 else 0).joinToString(",")
+        } ?: p.remove(OVERRIDE)
         p[ENABLED] = profile.enabled; p[PAUSED] = profile.paused; p[SOLAR] = profile.useSunTimes
         p[SUNRISE_OFFSET] = profile.sunriseOffsetMinutes; p[SUNSET_OFFSET] = profile.sunsetOffsetMinutes
         listOf("day" to profile.day, "sunset" to profile.sunset, "night" to profile.night).forEach { (name, phase) ->
@@ -90,7 +99,22 @@ class SamsungProfileRepository @Inject constructor(
         profile.lastAppliedLevel?.let { p[LAST_LEVEL] = it } ?: p.remove(LAST_LEVEL)
     }
 
+    private fun decodeOverride(text: String): SamsungManualOverride {
+        val fields = text.split(',')
+        require(fields.size == 6) { "Invalid saved manual override" }
+        fun flag(index: Int): Boolean {
+            require(fields[index] == "0" || fields[index] == "1")
+            return fields[index] == "1"
+        }
+        val level = fields[4].toInt()
+        require(level in 0..10)
+        return SamsungManualOverride(SamsungManualResumePolicy.valueOf(fields[0]), Instant.ofEpochMilli(fields[1].toLong()),
+            fields[2].takeUnless { it == "-" }?.let { Instant.ofEpochMilli(it.toLong()) }, SamsungNativeState(flag(3), level, flag(5)))
+    }
+
     private companion object {
+        val RESUME_POLICY = stringPreferencesKey("samsung_manual_resume_policy")
+        val OVERRIDE = stringPreferencesKey("samsung_manual_override")
         val INITIALIZED = booleanPreferencesKey("samsung_local_initialized")
         val ENABLED = booleanPreferencesKey("samsung_enabled")
         val PAUSED = booleanPreferencesKey("samsung_paused")

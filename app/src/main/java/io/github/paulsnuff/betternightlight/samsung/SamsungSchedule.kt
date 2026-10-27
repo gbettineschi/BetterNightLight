@@ -34,3 +34,10 @@ fun interpolateLevel(now: Instant, targets: List<TimedTarget>): Int {
 
 fun shouldPauseForManualOff(lastAppliedLevel: Int?, isNativeActive: Boolean): Boolean =
     lastAppliedLevel != null && lastAppliedLevel > 0 && !isNativeActive
+
+fun nextScheduledTransition(now: Instant, targets: List<TimedTarget>): Instant? =
+    targets.sortedBy { it.at }.zipWithNext().map { (previous, target) ->
+        val available = Duration.between(previous.at, target.at)
+        val fade = minOf(Duration.ofMinutes(target.fadeMinutes.toLong()), available)
+        if (previous.level == target.level) target.at else target.at.minus(fade)
+    }.filter { it.isAfter(now) }.minOrNull()

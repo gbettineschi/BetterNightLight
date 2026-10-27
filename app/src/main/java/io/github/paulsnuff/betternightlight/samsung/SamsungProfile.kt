@@ -13,9 +13,13 @@ data class SamsungProfile(
     val longitude: Double? = null,
     val sunriseOffsetMinutes: Int = 0,
     val sunsetOffsetMinutes: Int = 0,
+    val manualResumePolicy: SamsungManualResumePolicy = SamsungManualResumePolicy.NEXT_CHANGE,
+    val manualOverride: SamsungManualOverride? = null,
     val originalSettings: List<Int>? = null,
     val lastAppliedLevel: Int? = null,
 ) {
+    val isPaused: Boolean get() = paused || manualOverride != null
+
     fun validationError(): String? {
         if (sunriseOffsetMinutes !in -240..240 || sunsetOffsetMinutes !in -240..240) {
             return "Choose sunrise and sunset offsets between −240 and +240 minutes."
