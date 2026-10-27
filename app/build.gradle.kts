@@ -5,29 +5,10 @@ plugins {
     alias(libs.plugins.hilt.android)
 }
 
-// e.g. "v1.0.2-5-g0170a68", or empty when no tags exist
-val gitDescribe: String =
-    providers
-        .exec {
-            commandLine("sh", "-c", "git describe --tags --long HEAD 2>/dev/null || true")
-        }.standardOutput.asText
-        .get()
-        .trim()
-
-val latestTag: String = gitDescribe.substringBefore("-").removePrefix("v")
-val commitsSinceTag: Int =
-    gitDescribe
-        .substringAfter("-", "")
-        .substringBefore("-")
-        .toIntOrNull() ?: 0
-
-val appVersionName: String = "${latestTag.ifEmpty { "1.0.0" }}-samsung.3"
-
-val appVersionCode: Int =
-    appVersionName.substringBefore("-").split(".").let { parts ->
-        fun part(i: Int) = parts.getOrElse(i) { "0" }.toIntOrNull() ?: 0
-        part(0) * 1_000_000 + part(1) * 1_000 + part(2) + 2
-    }
+// Explicit release values also work before a tag exists and in shallow CI clones.
+val appVersionName: String = providers.gradleProperty("samsungVersionName").get()
+val appVersionCode: Int = providers.gradleProperty("samsungVersionCode").get().toInt()
+require(appVersionCode in 1..2_100_000_000) { "Invalid Android versionCode" }
 
 val devKeystoreExists: Provider<Boolean> =
     providers

@@ -51,3 +51,6 @@ Thumbs.db
 
 # Kotlin compiler sessions
 .kotlin/
+*.p12
+*.pkcs12
+__pycache__/

@@ -1,10 +1,12 @@
 # BetterNightLight-Samsung
 
-Schedule Samsung’s native **Eye comfort shield** with gradual warmth changes and manual overrides. No root or screen overlay is needed; **Shizuku must stay running**.
+A personal fork of [paulsnuff/BetterNightLight](https://github.com/paulsnuff/BetterNightLight), made to schedule Samsung’s native **Eye comfort shield** on my Galaxy S23. I added a Shizuku backend, three-phase warmth schedules, solar offsets, a dedicated tile and controls that respect Samsung’s own slider and toggle.
 
-A Samsung-focused fork of [Better Night Light by paulsnuff](https://github.com/paulsnuff/BetterNightLight), licensed under [GPL v3 or later](LICENSE). Tested on a physical **Galaxy S23 (SM-S911B), Android 17 / One UI 9**. Other Samsung versions are not yet verified.
+**My changes are 100% vibe-coded, built for personal use, and provided as is.** No warranty or promised support. The original app is the work of its upstream authors; the [GPL v3 or later licence](LICENSE) is retained.
 
-**[Download the latest APK](https://github.com/gbettineschi/BetterNightLight-Samsung/releases/latest)** · [Changelog](CHANGELOG.md) · [Validation record](docs/samsung-validation.md) · [Report an issue](https://github.com/gbettineschi/BetterNightLight-Samsung/issues)
+No root or screen overlay is needed. **Shizuku must stay running.** Tested on **Galaxy S23 (SM-S911B), Android 17 / One UI 9**; other Samsung versions are not yet verified.
+
+**[Download the APK](https://github.com/gbettineschi/BetterNightLight-Samsung/releases/latest)** · [Obtainium](#updates--obtainium) · [Changes from upstream](docs/fork-changes.md) · [Validation](docs/samsung-validation.md)
 
 ## Features
 
@@ -44,9 +46,11 @@ Sunrise/sunset uses saved coordinates; fetching a location is an explicit foregr
 
 About reports the Samsung backend, live Shizuku connection and native filter state. The one-time AOSP secure-settings permission check does not apply to Samsung.
 
-## Updates
+## Updates / Obtainium
 
-Install a newer APK from this repository over the existing app to keep its settings. Releases include an APK and a SHA-256 checksum file. There is no in-app automatic updater. The upstream project’s APKs do not contain this Samsung backend.
+Add `https://github.com/gbettineschi/BetterNightLight-Samsung` in [Obtainium](https://github.com/ImranR98/Obtainium), or [open the prepared import](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22io.github.gbettineschi.betternightlight%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fgbettineschi%2FBetterNightLight-Samsung%22%2C%22author%22%3A%22gbettineschi%22%2C%22name%22%3A%22Better%20Night%20Light%20Samsung%22%7D). Releases contain one signed APK: no APK filter, login or token is needed for this app. **Include prereleases is not required**; this fork uses normal releases. The version in the tag matches the APK’s version.
+
+Install updates over the existing app to preserve its settings and Shizuku authorization. Do not uninstall or clear data to get around a signing mismatch. Manual downloads work too. The upstream project’s APKs do not contain the Samsung backend and use a different package ID. There is no in-app updater.
 
 The first public release, **1.0.4-samsung.3**, uses the same APK and signing certificate as the version already checked on the S23. The certificate SHA-256 fingerprint is:
 
@@ -76,7 +80,9 @@ Use JDK 25 and Android SDK 37 (build-tools 36.0.0):
 
 For a signed, optimized release build, supply `SIGNING_STORE_FILE`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` and `SIGNING_KEY_PASSWORD` through the environment, then run `./gradlew assembleRelease`. Keep the same private signing key for future updates; do not commit it. The debug-only physical test activity is excluded from release builds.
 
-The first public APK was built and signed locally. The optional manual release workflow requires your own signing secrets; no private signing key is stored in this repository.
+The first public APK was built and signed locally. After the one-time signing setup, reviewed `vX.Y.Z-samsung.N` tags build and publish future signed APKs automatically for Obtainium. The retained certificate is checked before publication; manual workflow runs only verify and do not publish.
+
+Routine CI tests and builds without uploading installers. Failure reports expire after one day, and releases upload their APK directly to GitHub Releases without duplicate Actions installer artifacts. See [release and signing instructions](docs/releasing.md).
 
 ## Credits
 
