@@ -21,17 +21,12 @@ val commitsSinceTag: Int =
         .substringBefore("-")
         .toIntOrNull() ?: 0
 
-val appVersionName: String =
-    when {
-        latestTag.isEmpty() -> "1.0.0"
-        commitsSinceTag > 0 -> "$latestTag-dev"
-        else -> latestTag
-    }
+val appVersionName: String = "${latestTag.ifEmpty { "1.0.0" }}-samsung.3"
 
 val appVersionCode: Int =
     appVersionName.substringBefore("-").split(".").let { parts ->
         fun part(i: Int) = parts.getOrElse(i) { "0" }.toIntOrNull() ?: 0
-        part(0) * 1_000_000 + part(1) * 1_000 + part(2)
+        part(0) * 1_000_000 + part(1) * 1_000 + part(2) + 2
     }
 
 val devKeystoreExists: Provider<Boolean> =
@@ -48,7 +43,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.paulsnuff.betternightlight"
+        applicationId = "io.github.gbettineschi.betternightlight"
         minSdk = 29
         targetSdk = 37
         versionCode = appVersionCode
@@ -167,6 +162,7 @@ androidComponents {
 }
 
 dependencies {
+    testImplementation(libs.junit)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)

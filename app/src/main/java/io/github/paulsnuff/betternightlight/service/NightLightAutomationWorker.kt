@@ -11,6 +11,9 @@ import dagger.assisted.AssistedInject
 import io.github.paulsnuff.betternightlight.data.UserPreferencesRepository
 import io.github.paulsnuff.betternightlight.domain.NightLightAutomationManager
 import io.github.paulsnuff.betternightlight.domain.NightLightWriteException
+import io.github.paulsnuff.betternightlight.samsung.SamsungAutomation
+import io.github.paulsnuff.betternightlight.samsung.SamsungDevice
+import io.github.paulsnuff.betternightlight.samsung.SamsungProfileRepository
 import kotlinx.coroutines.flow.first
 
 @HiltWorker
@@ -21,8 +24,19 @@ class NightLightAutomationWorker
         @Assisted workerParams: WorkerParameters,
         private val automationManager: NightLightAutomationManager,
         private val userPreferencesRepository: UserPreferencesRepository,
+        private val samsungAutomation: SamsungAutomation,
+        private val samsungProfiles: SamsungProfileRepository,
     ) : CoroutineWorker(appContext, workerParams) {
         override suspend fun doWork(): Result {
+            if (SamsungDevice.isSupported(applicationContext)) {
+                val profile = samsungProfiles.profiles.first()
+                if (!profile.enabled && profile.originalSettings == null) {
+                    WorkManager.getInstance(applicationContext).cancelUniqueWork(UNIQUE_WORK_NAME)
+                    return Result.success()
+                }
+                samsungAutomation.reconcile()
+                return if (samsungAutomation.status.value.error) Result.retry() else Result.success()
+            }
             val schedule = userPreferencesRepository.automationScheduleFlow.first()
             if (!schedule.enabled) {
                 WorkManager.getInstance(applicationContext).cancelUniqueWork(UNIQUE_WORK_NAME)

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Better Night Light</string>
+    <string name="app_name">Better Night Light Samsung</string>
     <string name="common_close">Close</string>
 
     <!-- Navigation Labels -->
@@ -9,7 +9,7 @@
 
     <!-- About Screen -->
     <string name="about_source_code">Source code on GitHub</string>
-    <string name="about_github_url" translatable="false">https://github.com/paulsnuff/BetterNightLight</string>
+    <string name="about_github_url" translatable="false">https://github.com/gbettineschi/BetterNightLight</string>
     <string name="about_libraries">Open-source libraries</string>
     <string name="about_libraries_title">Libraries</string>
     <string name="about_close">Close</string>
@@ -150,4 +150,7 @@
     <string name="notification_channel_name">Night Light automation</string>
     <string name="notification_title">Automatic Night Light active</string>
     <string name="notification_text">Adjusting Night Light according to your schedule.</string>
+    <string name="about_upstream_github_url" translatable="false">https://github.com/paulsnuff/BetterNightLight</string>
+    <string name="about_original_project">Original project by paulsnuff</string>
+    <string name="about_fork_github_url" translatable="false">https://github.com/gbettineschi/BetterNightLight</string>
 </resources>

@@ -48,3 +48,6 @@ keystore.properties
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Kotlin compiler sessions
+.kotlin/
