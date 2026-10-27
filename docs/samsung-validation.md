@@ -1,5 +1,7 @@
 # Samsung validation record — 26–27 October 2026
 
+This is a chronological record of the Samsung preview builds. The current behavior and 87-test result are in the **1.0.4-samsung.3** section below; its configurable native manual override supersedes the initial build’s persistent manual-off pause.
+
 ## Physical device evidence
 
 Galaxy S23 SM-S911B, Android 17 / One UI 9, verified boot enabled. No root or bootloader modification.
@@ -87,3 +89,9 @@ Physical S23 evidence:
 - Choosing one hour showed a resume time. Resume in the app and in its own tile both returned to the current scheduled value. The owner's original profile, native eight-key baseline, schedule activation and screen-awake preference were restored. Default NEXT_CHANGE is selected.
 
 A mere tap that leaves every observed native value unchanged is not a detectable change; tracking the gesture itself would require additional UI integration/permissions, which were not introduced. Full reboot, an actual unattended one-hour wait, overnight operation and other-device/One UI acceptance remain unverified. No system clock or global Shizuku-server stop was used.
+
+## First public release packaging
+
+The repository is named **gbettineschi/BetterNightLight-Samsung**. The first public release packages the exact optimized signed `1.0.4-samsung.3` APK validated above, with the download renamed to `BetterNightLight-Samsung-1.0.4-samsung.3.apk`. Renaming the download does not change its contents, package ID, version or signing certificate. Release preparation changes documentation only; the application source is unchanged from `5efb0482ff798319c70024ad128ab2996fa0671e`.
+
+APK SHA-256: `cf64a69df948d6fdebfb8562682043177406ec2645e0caaf92559fc70f5bd671`.
