@@ -72,7 +72,7 @@ For bug reports, include your Samsung model, Android/One UI version, app version
 
 ## Build
 
-Use JDK 25 and Android SDK 37 (build-tools 36.0.0):
+Use JDK 25 and Android SDK 37 (SDK Manager package `platforms;android-37.0`, build-tools 36.0.0):
 
 ```sh
 ./gradlew testDebugUnitTest assembleDebug lintDebug

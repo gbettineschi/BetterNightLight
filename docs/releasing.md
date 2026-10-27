@@ -28,7 +28,7 @@ The release verifier rejects a different certificate, a different package/versio
 
 ## Local builds
 
-Use JDK 25, the pinned Gradle wrapper, Android SDK 37 and build-tools 36.0.0:
+Use JDK 25, the pinned Gradle wrapper, Android SDK 37 (SDK Manager package `platforms;android-37.0`) and build-tools 36.0.0:
 
 ```sh
 python3 -m unittest discover -s scripts/tests -v
